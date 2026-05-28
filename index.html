@@ -228,7 +228,11 @@
       }
       function cardMarkup(page) {
         const pos = map.positions[page.id] || { x: 100, y: 100 };
-        return `<article class="page-card" style="left:${pos.x}px; top:${pos.y}px;"><div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="menu-dot">=</div><h2 class="page-title">${escapeHtml(page.title)}</h2><div class="path">${escapeHtml(page.path || "")}</div><div class="badges">${(page.badges || []).map(b => `<span class="badge ${escapeHtml(b)}">${escapeHtml(String(b).replace("-", " "))}</span>`).join("")}</div><div class="sections">${(page.sections || []).map(sectionMarkup).join("")}</div></article>`;
+        return `<article class="page-card" data-node="${page.id}" style="left:${pos.x}px; top:${pos.y}px;"><div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div class="menu-dot">=</div><h2 class="page-title">${escapeHtml(page.title)}</h2><div class="path">${escapeHtml(page.path || "")}</div><div class="badges">${(page.badges || []).map(b => `<span class="badge ${escapeHtml(b)}">${escapeHtml(String(b).replace("-", " "))}</span>`).join("")}</div><div class="sections">${(page.sections || []).map(sectionMarkup).join("")}</div></article>`;
+      }
+      function renderedCardHeight(id, fallbackNode) {
+        const card = document.querySelector(`[data-node="${id}"]`);
+        return card ? card.offsetHeight : estimatedCardHeight(fallbackNode);
       }
       function render() {
         const board = boardSize();
@@ -247,7 +251,7 @@
           if (!from || !to || !fromNode) return;
           const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
           const x1 = from.x + 143;
-          const y1 = from.y + estimatedCardHeight(fromNode);
+          const y1 = from.y + renderedCardHeight(connection.from, fromNode);
           const x2 = to.x + 143;
           const y2 = to.y;
           const midY = y1 + Math.max(80, Math.abs(y2 - y1) / 2);
