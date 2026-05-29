@@ -192,6 +192,7 @@
       const zoom = document.getElementById("zoom");
       const BASE_BOARD_WIDTH = 4200;
       const BASE_BOARD_HEIGHT = 2400;
+      const VIEW_PADDING = 220;
       const LEGACY_SECTION_COLORS = {
         header: "#22bfa8",
         footer: "#aa58e6",
@@ -252,13 +253,28 @@
           };
         }, { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 });
       }
+      function contentOffset() {
+        const bounds = contentBounds();
+        return {
+          x: VIEW_PADDING - bounds.minX,
+          y: VIEW_PADDING - bounds.minY
+        };
+      }
+      function renderedPosition(id) {
+        const pos = map.positions[id] || { x: 100, y: 100 };
+        const offset = contentOffset();
+        return {
+          x: pos.x + offset.x,
+          y: pos.y + offset.y
+        };
+      }
       function boardSize() {
         const bounds = contentBounds();
         const contentW = bounds.maxX - bounds.minX;
         const contentH = bounds.maxY - bounds.minY;
         return {
-          width: Math.max(BASE_BOARD_WIDTH, Math.ceil(contentW * 4)),
-          height: Math.max(BASE_BOARD_HEIGHT, Math.ceil(contentH * 4))
+          width: Math.max(BASE_BOARD_WIDTH, Math.ceil(contentW + VIEW_PADDING * 2)),
+          height: Math.max(BASE_BOARD_HEIGHT, Math.ceil(contentH + VIEW_PADDING * 2))
         };
       }
       function sectionMarkup(section) {
@@ -271,7 +287,7 @@
           </div>`;
       }
       function cardMarkup(page) {
-        const pos = map.positions[page.id] || { x: 100, y: 100 };
+        const pos = renderedPosition(page.id);
         const pageColor = pageBackgroundColor(page);
         const pageTextColor = readableTextColor(pageColor);
         const isWhitePage = String(pageColor).toLowerCase() === "#ffffff";
@@ -304,6 +320,7 @@
             </svg>
             ${allNodes().map(cardMarkup).join("")}
           </div>`;
+        setInitialZoom(board);
         applyZoom();
         drawConnections();
         requestAnimationFrame(centerViewportOnContent);
@@ -313,8 +330,8 @@
         if (!svg) return;
         map.connections = (map.connections || []).filter(c => findNode(c.from) && findNode(c.to));
         map.connections.forEach(connection => {
-          const from = map.positions[connection.from];
-          const to = map.positions[connection.to];
+          const from = renderedPosition(connection.from);
+          const to = renderedPosition(connection.to);
           const fromNode = findNode(connection.from);
           if (!from || !to || !fromNode) return;
           const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -338,6 +355,12 @@
         zoom.value = Math.round(clamp(percent, 10, 200));
         applyZoom(anchorEvent);
       }
+      function setInitialZoom(board) {
+        if (canvas.dataset.initialZoomApplied) return;
+        const fitScale = Math.min(viewer.clientWidth / board.width, viewer.clientHeight / board.height, 1);
+        zoom.value = Math.round(clamp(fitScale * 100, 10, 100));
+        canvas.dataset.initialZoomApplied = "true";
+      }
       function applyZoom(anchorEvent) {
         const oldScale = Number(canvas.dataset.scale || 1);
         const scale = getZoomScale();
@@ -360,8 +383,8 @@
       function centerViewportOnContent() {
         const bounds = contentBounds();
         const scale = getZoomScale();
-        const centerX = ((bounds.minX + bounds.maxX) / 2) * scale;
-        const centerY = ((bounds.minY + bounds.maxY) / 2) * scale;
+        const centerX = (VIEW_PADDING + (bounds.maxX - bounds.minX) / 2) * scale;
+        const centerY = (VIEW_PADDING + (bounds.maxY - bounds.minY) / 2) * scale;
         viewer.scrollLeft = Math.max(0, centerX - viewer.clientWidth / 2);
         viewer.scrollTop = Math.max(0, centerY - viewer.clientHeight / 2);
       }
