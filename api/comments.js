@@ -2,6 +2,7 @@ import { neon } from "@neondatabase/serverless";
 import { randomUUID } from "node:crypto";
 
 const databaseUrl = process.env.DATABASE_URL;
+// Vercel injects this through the Neon/Postgres integration.
 const sql = databaseUrl ? neon(databaseUrl) : null;
 
 function send(response, status, payload) {
