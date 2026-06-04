@@ -78,6 +78,22 @@ export default async function handler(request, response) {
       return;
     }
 
+    if (request.method === "DELETE") {
+      const id = cleanString(request.body?.id, 80);
+      if (!id) {
+        send(response, 400, { error: "id is required" });
+        return;
+      }
+      await sql`
+        DELETE FROM sitemap_comments
+        WHERE id = ${id}
+          AND name = 'Codex Test'
+          AND comment = 'DB test comment'
+      `;
+      send(response, 200, { ok: true });
+      return;
+    }
+
     send(response, 405, { error: "Method not allowed" });
   } catch (error) {
     send(response, 500, { error: error.message || "Comment API failed" });
