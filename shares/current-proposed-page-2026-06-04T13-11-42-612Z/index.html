@@ -110,17 +110,17 @@
       .comment-pin {
         position: absolute;
         z-index: 8;
-        width: 30px;
-        height: 30px;
+        width: 40px;
+        height: 40px;
         display: grid;
         place-items: center;
         border: 2px solid white;
         border-radius: 999px;
         background: #111827;
         color: white;
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 800;
-        box-shadow: 0 8px 22px rgba(23, 32, 51, .28);
+        box-shadow: 0 10px 26px rgba(23, 32, 51, .30);
         transform: translate(-50%, -50%);
         cursor: pointer;
       }
@@ -285,6 +285,7 @@
       const MAP_GAP = 520;
       const MAP_LABEL_HEIGHT = 84;
       const COMMENT_STORAGE_KEY = `tavus-share-comments-v2:${location.pathname}`;
+      const COMMENT_API = "/api/comments";
       let comments = loadComments();
       let pendingComment = null;
       const LEGACY_SECTION_COLORS = {
@@ -324,6 +325,35 @@
       }
       function saveComments() {
         localStorage.setItem(COMMENT_STORAGE_KEY, JSON.stringify(comments));
+      }
+      function sharePath() {
+        return location.pathname.endsWith("/") ? location.pathname : `${location.pathname}/`;
+      }
+      async function loadSharedComments() {
+        try {
+          const response = await fetch(`${COMMENT_API}?share=${encodeURIComponent(sharePath())}`);
+          if (!response.ok) throw new Error("Shared comments unavailable");
+          const payload = await response.json();
+          comments = Array.isArray(payload.comments) ? payload.comments : [];
+          saveComments();
+        } catch (error) {
+          comments = loadComments();
+        }
+        renderComments();
+      }
+      async function createSharedComment(comment) {
+        try {
+          const response = await fetch(COMMENT_API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...comment, share: sharePath() })
+          });
+          if (!response.ok) throw new Error("Shared comment save failed");
+          const payload = await response.json();
+          return payload.comment || comment;
+        } catch (error) {
+          return comment;
+        }
       }
       function commentInitials(name) {
         const parts = String(name || "?").trim().split(/\s+/).filter(Boolean);
@@ -582,25 +612,28 @@
       document.getElementById("zoomIn").addEventListener("click", () => stepZoom(10));
       canvas.addEventListener("click", openCommentForm);
       cancelComment.addEventListener("click", closeCommentForm);
-      commentForm.addEventListener("submit", event => {
+      commentForm.addEventListener("submit", async event => {
         event.preventDefault();
         if (!pendingComment) return;
         const name = commentName.value.trim();
         const text = commentText.value.trim();
         if (!name || !text) return;
-        comments.push({
+        const draft = {
           id: `comment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           x: pendingComment.x,
           y: pendingComment.y,
           name,
           text,
           createdAt: new Date().toISOString()
-        });
+        };
+        const savedComment = await createSharedComment(draft);
+        comments.push(savedComment);
         saveComments();
         renderComments();
         closeCommentForm();
       });
       render();
+      loadSharedComments();
     </script>
   </body>
 </html>
