@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Proposed Page Sitemap - 002</title>
+    <style>
+      :root {
+        --blue: #2f7df2;
+        --teal: #22bfa8;
+        --purple: #aa58e6;
+        --ink: #172033;
+        --muted: #62708a;
+        --paper: #f7f9fd;
+        --line: #74a8ff;
+        --new: #f4b63f;
+        --existing: #1fbd7a;
+        --restructure: #6d73ff;
+        --external: #ef6b6b;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+      }
+      .viewer {
+        width: 100vw;
+        height: 100vh;
+        overflow: auto;
+        background:
+          linear-gradient(#eef4ff 1px, transparent 1px),
+          linear-gradient(90deg, #eef4ff 1px, transparent 1px),
+          var(--paper);
+        background-size: 40px 40px;
+      }
+      .controls {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid #c7d7f6;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, .94);
+        box-shadow: 0 12px 32px rgba(23, 32, 51, .16);
+      }
+      button, input {
+        min-height: 36px;
+        border: 1px solid #c7d7f6;
+        border-radius: 8px;
+        background: white;
+        color: var(--ink);
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 0 12px;
+      }
+      button { cursor: pointer; }
+      input { width: 74px; text-align: center; }
+      .canvas { position: relative; width: 4200px; height: 2400px; }
+      .canvas-stage {
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 4200px;
+        min-height: 2400px;
+        padding: 120px 900px 220px;
+        transform-origin: top left;
+      }
+      .page-card {
+        position: absolute;
+        z-index: 3;
+        width: 286px;
+        min-height: 124px;
+        border: 3px solid var(--blue);
+        border-radius: 18px;
+        background: white;
+        box-shadow: 0 10px 24px rgba(31, 94, 194, 0.09);
+      }
+      .graph-lines {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        pointer-events: none;
+      }
+      .graph-line {
+        stroke: var(--line);
+        stroke-width: 3;
+        fill: none;
+        marker-end: url(#arrow);
+      }
+      .chrome {
+        height: 26px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0 12px;
+      }
+      .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--blue); }
+      .menu-dot {
+        position: absolute;
+        top: -13px;
+        right: -16px;
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: var(--blue);
+        color: white;
+        font-weight: 800;
+      }
+      .page-title {
+        margin: 0 14px 12px;
+        color: var(--blue);
+        font-size: 21px;
+        line-height: 1.08;
+        text-align: center;
+        letter-spacing: 0;
+      }
+      .path {
+        margin: -5px 14px 12px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.25;
+        text-align: center;
+        word-break: break-word;
+      }
+      .badges { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin: -3px 10px 10px; }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 20px;
+        padding: 0 7px;
+        border-radius: 999px;
+        color: white;
+        font-size: 10px;
+        font-weight: 750;
+        text-transform: uppercase;
+      }
+      .badge.exists { background: var(--existing); }
+      .badge.restructure { background: var(--restructure); }
+      .badge.net-new { background: var(--new); color: #332300; }
+      .badge.external { background: var(--external); }
+      .badge.footer-only { background: #59657c; }
+      .badge.cross { background: #334b79; }
+      .badge.future { background: #8b5cf6; }
+      .sections { display: flex; flex-direction: column; gap: 4px; padding: 0 12px 12px; }
+      .section {
+        display: grid;
+        gap: 5px;
+        min-height: 44px;
+        padding: 9px 11px;
+        border-radius: 4px;
+        color: white;
+        background: var(--blue);
+      }
+      .section-title {
+        font-size: 15px;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+      }
+      .section-note {
+        font-size: 10px;
+        line-height: 1.25;
+        opacity: .82;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="viewer" id="viewer">
+      <div class="canvas" id="canvas"></div>
+    </main>
+    <div class="controls">
+      <button id="zoomOut" title="Zoom out">-</button>
+      <input id="zoom" type="number" min="10" max="200" step="1" value="100" aria-label="Zoom percent" />
+      <button id="zoomIn" title="Zoom in">+</button>
+    </div>
+    <script>
+      const PAYLOAD = JSON.parse(decodeURIComponent(escape(atob("eyJleHBvcnRlZEF0IjoiMjAyNi0wNi0wNFQxMzowNjowNC42ODZaIiwiYWN0aXZlIjoicHJvcG9zZWQiLCJsYWJlbCI6IlByb3Bvc2VkIFBhZ2UgU2l0ZW1hcCAtIDAwMiIsIm1hcCI6eyJsYWJlbCI6IlByb3Bvc2VkIFBhZ2UgU2l0ZW1hcCAtIDAwMiIsIm5vdGVzIjoiQ2xlYW4gcGFnZS1tb2RlIFRhdnVzIHByb3Bvc2FsIGZyb20gMDA1OiBQcm9kdWN0cyBoYXMgQUkgSHVtYW4gU3R1ZGlvIGFuZCBleHRlcm5hbCBQQUxzOyBTb2x1dGlvbnMgaXMgdGhlIGRpcmVjdCBmb3VyLXBhZ2UgYWdlbnQgbGlzdDsgQVBJIFBsYXRmb3JtIGNvbnRhaW5zIG92ZXJ2aWV3LCBkb2NzLCBwcmljaW5nLCBzaWdudXAsIGNoYW5uZWxzLCBhbmQgZmVhdHVyZXM7IEVudGVycHJpc2UgYW5kIFJlc2VhcmNoIGFyZSBzaW1wbGlmaWVkLiIsInJvb3QiOnsiaWQiOiJwYWdlLXByb3Bvc2VkLWhvbWUtMDAyIiwidGl0bGUiOiJIb21lIiwicGF0aCI6Ii8iLCJiYWRnZXMiOlsibmV0LW5ldyJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbeyJpZCI6InBhZ2UtcHJvcG9zZWQtcHJvZHVjdHMtMDAyIiwidGl0bGUiOiJQcm9kdWN0cyIsInBhdGgiOiJUb3AgbmF2IGRyb3Bkb3duIiwiYmFkZ2VzIjpbInJlc3RydWN0dXJlIl0sInNlY3Rpb25zIjpbXSwiY2hpbGRyZW4iOlt7ImlkIjoicGFnZS1wcm9wb3NlZC1haS1odW1hbi1zdHVkaW8tMDAyIiwidGl0bGUiOiJBSSBIdW1hbiBTdHVkaW8iLCJwYXRoIjoiVEJEIiwiYmFkZ2VzIjpbIm5ldC1uZXciXSwic2VjdGlvbnMiOltdLCJjaGlsZHJlbiI6W119LHsiaWQiOiJwYWdlLXByb3Bvc2VkLXBhbHMtMDAyIiwidGl0bGUiOiJQQUxzIiwicGF0aCI6Imh0dHBzOi8vdGF2aXNwYWxzLmNvbSIsImJhZGdlcyI6WyJleHRlcm5hbCIsInJlc3RydWN0dXJlIl0sInNlY3Rpb25zIjpbXSwiY2hpbGRyZW4iOltdfV19LHsiaWQiOiJwYWdlLXByb3Bvc2VkLXNvbHV0aW9ucy0wMDIiLCJ0aXRsZSI6IlNvbHV0aW9ucyIsInBhdGgiOiJUb3AgbmF2IGRyb3Bkb3duIiwiYmFkZ2VzIjpbImV4aXN0cyIsInJlc3RydWN0dXJlIl0sInNlY3Rpb25zIjpbXSwiY2hpbGRyZW4iOlt7ImlkIjoicGFnZS1wcm9wb3NlZC1zYWxlcy1zZHItMDAyIiwidGl0bGUiOiJTYWxlcyAvIFNEUiBBZ2VudCIsInBhdGgiOiIvc29sdXRpb25zL21lZXQtYWktc2RyIiwiYmFkZ2VzIjpbImV4aXN0cyJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtaGVhbHRoY2FyZS0wMDIiLCJ0aXRsZSI6IkhlYWx0aGNhcmUgQWdlbnQiLCJwYXRoIjoiL3NvbHV0aW9ucy9oZWFsdGhjYXJlIiwiYmFkZ2VzIjpbImV4aXN0cyJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtaW50ZXJ2aWV3ZXItMDAyIiwidGl0bGUiOiJJbnRlcnZpZXdlciBBZ2VudCIsInBhdGgiOiIvc29sdXRpb25zL2FpLWludGVydmlld2VyIiwiYmFkZ2VzIjpbImV4aXN0cyJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtbGQtY29hY2gtMDAyIiwidGl0bGUiOiJMJkQgQ29hY2giLCJwYXRoIjoiL3NvbHV0aW9ucy9haS1sLWQiLCJiYWRnZXMiOlsiZXhpc3RzIl0sInNlY3Rpb25zIjpbXSwiY2hpbGRyZW4iOltdfV19LHsiaWQiOiJwYWdlLXByb3Bvc2VkLWFwaS1wbGF0Zm9ybS0wMDIiLCJ0aXRsZSI6IkFQSSBQbGF0Zm9ybSIsInBhdGgiOiJUb3AgbmF2IGRyb3Bkb3duIiwiYmFkZ2VzIjpbImV4aXN0cyIsInJlc3RydWN0dXJlIl0sInNlY3Rpb25zIjpbXSwiY2hpbGRyZW4iOlt7ImlkIjoicGFnZS1wcm9wb3NlZC1hcGktb3ZlcnZpZXctMDAyIiwidGl0bGUiOiJPdmVydmlldyIsInBhdGgiOiIvY3ZpIiwiYmFkZ2VzIjpbImV4aXN0cyIsInJlc3RydWN0dXJlIl0sInNlY3Rpb25zIjpbXSwiY2hpbGRyZW4iOltdfSx7ImlkIjoicGFnZS1wcm9wb3NlZC1kb2NzLTAwMiIsInRpdGxlIjoiRG9jcyIsInBhdGgiOiJkb2NzLnRhdnVzLmlvIiwiYmFkZ2VzIjpbImV4dGVybmFsIl0sInNlY3Rpb25zIjpbXSwiY2hpbGRyZW4iOltdfSx7ImlkIjoicGFnZS1wcm9wb3NlZC1hcGktcmVmZXJlbmNlLTAwMiIsInRpdGxlIjoiQVBJIFJlZmVyZW5jZSIsInBhdGgiOiJkb2NzLnRhdnVzLmlvL2FwaS1yZWZlcmVuY2UiLCJiYWRnZXMiOlsiZXh0ZXJuYWwiXSwic2VjdGlvbnMiOltdLCJjaGlsZHJlbiI6W119LHsiaWQiOiJwYWdlLXByb3Bvc2VkLWNvbW11bml0eS0wMDIiLCJ0aXRsZSI6IkNvbW11bml0eSIsInBhdGgiOiJEaXNjb3JkIC8gY29tbXVuaXR5IiwiYmFkZ2VzIjpbImV4aXN0cyJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtYXBpLXByaWNpbmctMDAyIiwidGl0bGUiOiJBUEkgUHJpY2luZyIsInBhdGgiOiIvcHJpY2luZyIsImJhZGdlcyI6WyJleGlzdHMiXSwic2VjdGlvbnMiOltdLCJjaGlsZHJlbiI6W119LHsiaWQiOiJwYWdlLXByb3Bvc2VkLXNpZ24tdXAtMDAyIiwidGl0bGUiOiJTaWduIHVwIiwicGF0aCI6IkRpcmVjdCBzaWdudXAgbGluayIsImJhZGdlcyI6WyJjcm9zcyJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtY2hhbm5lbHMtMDAyIiwidGl0bGUiOiJDaGFubmVscyIsInBhdGgiOiJEcm9wZG93biBncm91cCIsImJhZGdlcyI6WyJyZXN0cnVjdHVyZSJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbeyJpZCI6InBhZ2UtcHJvcG9zZWQtY3ZpLXZpZGVvLTAwMiIsInRpdGxlIjoiQ1ZJIChWaWRlbykiLCJwYXRoIjoiL2N2aSIsImJhZGdlcyI6WyJleGlzdHMiXSwic2VjdGlvbnMiOltdLCJjaGlsZHJlbiI6W119LHsiaWQiOiJwYWdlLXByb3Bvc2VkLXZvaWNlLWFnZW50cy0wMDIiLCJ0aXRsZSI6IlZvaWNlIEFnZW50cyIsInBhdGgiOiJUQkQiLCJiYWRnZXMiOlsibmV0LW5ldyJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtY2hhdC0wMDIiLCJ0aXRsZSI6IkNoYXQiLCJwYXRoIjoiRnV0dXJlIiwiYmFkZ2VzIjpbImZ1dHVyZSJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX1dfSx7ImlkIjoicGFnZS1wcm9wb3NlZC1rZXktZmVhdHVyZXMtMDAyIiwidGl0bGUiOiJLZXkgRmVhdHVyZXMiLCJwYXRoIjoiU2VjdGlvbiBzY29wZSBUQkQiLCJiYWRnZXMiOlsicmVzdHJ1Y3R1cmUiXSwic2VjdGlvbnMiOltdLCJjaGlsZHJlbiI6W119XX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtZW50ZXJwcmlzZS0wMDIiLCJ0aXRsZSI6IkVudGVycHJpc2UiLCJwYXRoIjoiVG9wIG5hdiBkcm9wZG93biIsImJhZGdlcyI6WyJleGlzdHMiLCJyZXN0cnVjdHVyZSJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbeyJpZCI6InBhZ2UtcHJvcG9zZWQtZW50ZXJwcmlzZS1vdmVydmlldy0wMDIiLCJ0aXRsZSI6IkVudGVycHJpc2Ugb3ZlcnZpZXciLCJwYXRoIjoiL3ZpZGVvLWFnZW50cyIsImJhZGdlcyI6WyJleGlzdHMiLCJyZXN0cnVjdHVyZSJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtYm9vay1kZW1vLTAwMiIsInRpdGxlIjoiQm9vayBhIGRlbW8iLCJwYXRoIjoiL2RlbW8iLCJiYWRnZXMiOlsiY3Jvc3MiXSwic2VjdGlvbnMiOltdLCJjaGlsZHJlbiI6W119XX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtcmVzZWFyY2gtMDAyIiwidGl0bGUiOiJSZXNlYXJjaCIsInBhdGgiOiJUb3AgbmF2IGRyb3Bkb3duIiwiYmFkZ2VzIjpbImV4aXN0cyIsInJlc3RydWN0dXJlIl0sInNlY3Rpb25zIjpbXSwiY2hpbGRyZW4iOlt7ImlkIjoicGFnZS1wcm9wb3NlZC1yZXNlYXJjaC1vdmVydmlldy10ZWFtLTAwMiIsInRpdGxlIjoiT3ZlcnZpZXcgLyBUZWFtIiwicGF0aCI6Ii9yZXNlYXJjaCIsImJhZGdlcyI6WyJleGlzdHMiLCJyZXN0cnVjdHVyZSJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX0seyJpZCI6InBhZ2UtcHJvcG9zZWQtbW9kZWxzLTAwMiIsInRpdGxlIjoiTW9kZWxzIiwicGF0aCI6IlJlc2VhcmNoIHN1Yi1zZWN0aW9uIiwiYmFkZ2VzIjpbInJlc3RydWN0dXJlIl0sInNlY3Rpb25zIjpbXSwiY2hpbGRyZW4iOltdfSx7ImlkIjoicGFnZS1wcm9wb3NlZC1ibG9ncy0wMDIiLCJ0aXRsZSI6IkJsb2dzIiwicGF0aCI6Ii9ibG9nIiwiYmFkZ2VzIjpbImV4aXN0cyJdLCJzZWN0aW9ucyI6W10sImNoaWxkcmVuIjpbXX1dfSx7ImlkIjoicGFnZS1wcm9wb3NlZC1wcmljaW5nLTAwMiIsInRpdGxlIjoiUHJpY2luZyIsInBhdGgiOiIvcHJpY2luZyIsImJhZGdlcyI6WyJleGlzdHMiXSwic2VjdGlvbnMiOltdLCJjaGlsZHJlbiI6W119XSwiY29sb3IiOiIjMjJiZmE4In0sInBvc2l0aW9ucyI6eyJwYWdlLXByb3Bvc2VkLWhvbWUtMDAyIjp7IngiOjc2MDAsInkiOjgyMDB9LCJwYWdlLXByb3Bvc2VkLXByb2R1Y3RzLTAwMiI6eyJ4Ijo0MzAwLCJ5Ijo5MDAwfSwicGFnZS1wcm9wb3NlZC1zb2x1dGlvbnMtMDAyIjp7IngiOjU2MDAsInkiOjkwMDB9LCJwYWdlLXByb3Bvc2VkLWFwaS1wbGF0Zm9ybS0wMDIiOnsieCI6NzYwMCwieSI6OTAwMH0sInBhZ2UtcHJvcG9zZWQtZW50ZXJwcmlzZS0wMDIiOnsieCI6OTgwMCwieSI6OTAwMH0sInBhZ2UtcHJvcG9zZWQtcmVzZWFyY2gtMDAyIjp7IngiOjExMDAwLCJ5Ijo5MDAwfSwicGFnZS1wcm9wb3NlZC1wcmljaW5nLTAwMiI6eyJ4IjoxMjIwMCwieSI6OTAwMH0sInBhZ2UtcHJvcG9zZWQtYWktaHVtYW4tc3R1ZGlvLTAwMiI6eyJ4Ijo0MTIwLCJ5IjoxMDEwMH0sInBhZ2UtcHJvcG9zZWQtcGFscy0wMDIiOnsieCI6NDQ4MCwieSI6MTAxMDB9LCJwYWdlLXByb3Bvc2VkLXNhbGVzLXNkci0wMDIiOnsieCI6NDk0MCwieSI6MTAxMDB9LCJwYWdlLXByb3Bvc2VkLWhlYWx0aGNhcmUtMDAyIjp7IngiOjUzMDAsInkiOjEwMTAwfSwicGFnZS1wcm9wb3NlZC1pbnRlcnZpZXdlci0wMDIiOnsieCI6NTY2MCwieSI6MTAxMDB9LCJwYWdlLXByb3Bvc2VkLWxkLWNvYWNoLTAwMiI6eyJ4Ijo2MDIwLCJ5IjoxMDEwMH0sInBhZ2UtcHJvcG9zZWQtYXBpLW92ZXJ2aWV3LTAwMiI6eyJ4Ijo2NTYwLCJ5IjoxMDEwMH0sInBhZ2UtcHJvcG9zZWQtZG9jcy0wMDIiOnsieCI6NjkyMCwieSI6MTAxMDB9LCJwYWdlLXByb3Bvc2VkLWFwaS1yZWZlcmVuY2UtMDAyIjp7IngiOjcyODAsInkiOjEwMTAwfSwicGFnZS1wcm9wb3NlZC1jb21tdW5pdHktMDAyIjp7IngiOjc2NDAsInkiOjEwMTAwfSwicGFnZS1wcm9wb3NlZC1hcGktcHJpY2luZy0wMDIiOnsieCI6ODAwMCwieSI6MTAxMDB9LCJwYWdlLXByb3Bvc2VkLXNpZ24tdXAtMDAyIjp7IngiOjgzNjAsInkiOjEwMTAwfSwicGFnZS1wcm9wb3NlZC1jaGFubmVscy0wMDIiOnsieCI6ODcyMCwieSI6MTAxMDB9LCJwYWdlLXByb3Bvc2VkLWtleS1mZWF0dXJlcy0wMDIiOnsieCI6OTA4MCwieSI6MTAxMDB9LCJwYWdlLXByb3Bvc2VkLWN2aS12aWRlby0wMDIiOnsieCI6ODM2MCwieSI6MTEyMDB9LCJwYWdlLXByb3Bvc2VkLXZvaWNlLWFnZW50cy0wMDIiOnsieCI6ODcyMCwieSI6MTEyMDB9LCJwYWdlLXByb3Bvc2VkLWNoYXQtMDAyIjp7IngiOjkwODAsInkiOjExMjAwfSwicGFnZS1wcm9wb3NlZC1lbnRlcnByaXNlLW92ZXJ2aWV3LTAwMiI6eyJ4Ijo5NjIwLCJ5IjoxMDEwMH0sInBhZ2UtcHJvcG9zZWQtYm9vay1kZW1vLTAwMiI6eyJ4Ijo5OTgwLCJ5IjoxMDEwMH0sInBhZ2UtcHJvcG9zZWQtcmVzZWFyY2gtb3ZlcnZpZXctdGVhbS0wMDIiOnsieCI6MTA2NDAsInkiOjEwMTAwfSwicGFnZS1wcm9wb3NlZC1tb2RlbHMtMDAyIjp7IngiOjExMDAwLCJ5IjoxMDEwMH0sInBhZ2UtcHJvcG9zZWQtYmxvZ3MtMDAyIjp7IngiOjExMzYwLCJ5IjoxMDEwMH19LCJpbml0aWFsaXplZEdyYXBoIjp0cnVlLCJuZWVkc1ZpZXdwb3J0Q2VudGVyIjpmYWxzZSwiY29ubmVjdGlvbnMiOltdLCJwZW5kaW5nQ29ubmVjdGlvbiI6bnVsbH19"))));
+      const map = PAYLOAD.map;
+      const canvas = document.getElementById("canvas");
+      const viewer = document.getElementById("viewer");
+      const zoom = document.getElementById("zoom");
+      const BASE_BOARD_WIDTH = 4200;
+      const BASE_BOARD_HEIGHT = 2400;
+      const LEGACY_SECTION_COLORS = {
+        header: "#22bfa8",
+        footer: "#aa58e6",
+        new: "#f4b63f",
+        cross: "#334b79"
+      };
+      function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      }
+      function isHexColor(value) {
+        return /^#[0-9a-f]{6}$/i.test(String(value || "").trim());
+      }
+      function sectionColor(type = "") {
+        const value = String(type || "").trim();
+        if (isHexColor(value)) return value;
+        return LEGACY_SECTION_COLORS[value] || "#2f7df2";
+      }
+      function pageBackgroundColor(page) {
+        return isHexColor(page?.color) ? page.color : "#ffffff";
+      }
+      function readableTextColor(background) {
+        const hex = sectionColor(background).replace("#", "");
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+        return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#172033" : "#fff";
+      }
+      function allNodes(node = map.root) {
+        return [node, ...(node.children || []).flatMap(allNodes)];
+      }
+      function findNode(id, node = map.root) {
+        if (node.id === id) return node;
+        for (const child of node.children || []) {
+          const found = findNode(id, child);
+          if (found) return found;
+        }
+        return null;
+      }
+      function estimatedCardHeight(node) {
+        const sections = node.sections || [];
+        return 122 + sections.reduce((sum, section) => {
+          const title = String(section[0] || "");
+          const note = String(section[1] || "");
+          return sum + 60 + Math.ceil(title.length / 26) * 14 + Math.ceil(note.length / 42) * 12;
+        }, 0);
+      }
+      function contentBounds() {
+        const nodes = allNodes();
+        if (!nodes.length) return { minX: 0, minY: 0, maxX: BASE_BOARD_WIDTH, maxY: BASE_BOARD_HEIGHT };
+        return nodes.reduce((bounds, node) => {
+          const pos = map.positions[node.id] || { x: 0, y: 0 };
+          const height = estimatedCardHeight(node);
+          return {
+            minX: Math.min(bounds.minX, pos.x),
+            minY: Math.min(bounds.minY, pos.y),
+            maxX: Math.max(bounds.maxX, pos.x + 286),
+            maxY: Math.max(bounds.maxY, pos.y + height)
+          };
+        }, { minX: Infinity, minY: Infinity, maxX: 0, maxY: 0 });
+      }
+      function contentOffset() {
+        const bounds = contentBounds();
+        return {
+          x: VIEW_PADDING - bounds.minX,
+          y: VIEW_PADDING - bounds.minY
+        };
+      }
+      function renderedPosition(id) {
+        const pos = map.positions[id] || { x: 100, y: 100 };
+        const offset = contentOffset();
+        return {
+          x: pos.x + offset.x,
+          y: pos.y + offset.y
+        };
+      }
+      function boardSize() {
+        const bounds = contentBounds();
+        const contentW = bounds.maxX - bounds.minX;
+        const contentH = bounds.maxY - bounds.minY;
+        return {
+          width: Math.max(BASE_BOARD_WIDTH, Math.ceil(contentW + VIEW_PADDING * 2)),
+          height: Math.max(BASE_BOARD_HEIGHT, Math.ceil(contentH + VIEW_PADDING * 2))
+        };
+      }
+      function sectionMarkup(section) {
+        const [title, note = "", type = ""] = section;
+        const color = sectionColor(type);
+        return `
+          <div class="section" style="background:${color}; color:${readableTextColor(color)}">
+            <div class="section-title">${escapeHtml(title)}</div>
+            <div class="section-note">${escapeHtml(note)}</div>
+          </div>`;
+      }
+      function cardMarkup(page) {
+        const pos = renderedPosition(page.id);
+        const pageColor = pageBackgroundColor(page);
+        const pageTextColor = readableTextColor(pageColor);
+        const isWhitePage = String(pageColor).toLowerCase() === "#ffffff";
+        const titleColor = isWhitePage ? "var(--blue)" : pageTextColor;
+        const pathColor = isWhitePage ? "var(--muted)" : pageTextColor;
+        return `
+          <article class="page-card" data-node="${page.id}" style="left:${pos.x}px; top:${pos.y}px; background:${pageColor};">
+            <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="menu-dot">=</div>
+            <h2 class="page-title" style="color:${titleColor};">${escapeHtml(page.title)}</h2>
+            <div class="path" style="color:${pathColor};${isWhitePage ? "" : " opacity:.82;"}">${escapeHtml(page.path || "")}</div>
+            <div class="badges">${(page.badges || []).map(b => `<span class="badge ${escapeHtml(b)}">${escapeHtml(String(b).replace("-", " "))}</span>`).join("")}</div>
+            <div class="sections">${(page.sections || []).map(sectionMarkup).join("")}</div>
+          </article>`;
+      }
+      function renderedCardHeight(id, fallbackNode) {
+        const card = document.querySelector(`[data-node="${id}"]`);
+        return card ? card.offsetHeight : estimatedCardHeight(fallbackNode);
+      }
+      function render() {
+        const board = boardSize();
+        canvas.innerHTML = `
+          <div class="canvas-stage" id="canvasStage" style="width:${board.width}px; min-height:${board.height}px;">
+            <svg class="graph-lines" id="graphLines" viewBox="0 0 ${board.width} ${board.height}">
+              <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#74a8ff"></path>
+                </marker>
+              </defs>
+            </svg>
+            ${allNodes().map(cardMarkup).join("")}
+          </div>`;
+        setInitialZoom(board);
+        applyZoom();
+        drawConnections();
+        requestAnimationFrame(centerViewportOnContent);
+      }
+      function drawConnections() {
+        const svg = document.getElementById("graphLines");
+        if (!svg) return;
+        map.connections = (map.connections || []).filter(c => findNode(c.from) && findNode(c.to));
+        map.connections.forEach(connection => {
+          const from = renderedPosition(connection.from);
+          const to = renderedPosition(connection.to);
+          const fromNode = findNode(connection.from);
+          if (!from || !to || !fromNode) return;
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          const x1 = from.x + 143;
+          const y1 = from.y + renderedCardHeight(connection.from, fromNode);
+          const x2 = to.x + 143;
+          const y2 = to.y;
+          const midY = y1 + Math.max(80, Math.abs(y2 - y1) / 2);
+          path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`);
+          path.setAttribute("class", "graph-line");
+          svg.appendChild(path);
+        });
+      }
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+      function getZoomScale() {
+        return clamp(Number(zoom.value || 100), 10, 200) / 100;
+      }
+      function setZoomPercent(percent, anchorEvent) {
+        zoom.value = Math.round(clamp(percent, 10, 200));
+        applyZoom(anchorEvent);
+      }
+      function setInitialZoom(board) {
+        if (canvas.dataset.initialZoomApplied) return;
+        const fitScale = Math.min(viewer.clientWidth / board.width, viewer.clientHeight / board.height, 1);
+        zoom.value = Math.round(clamp(fitScale * 100, 10, 100));
+        canvas.dataset.initialZoomApplied = "true";
+      }
+      function applyZoom(anchorEvent) {
+        const oldScale = Number(canvas.dataset.scale || 1);
+        const scale = getZoomScale();
+        const stage = document.getElementById("canvasStage");
+        const board = boardSize();
+        if (anchorEvent && oldScale > 0) {
+          const wrapRect = viewer.getBoundingClientRect();
+          const anchorX = anchorEvent.clientX - wrapRect.left;
+          const anchorY = anchorEvent.clientY - wrapRect.top;
+          const boardX = (viewer.scrollLeft + anchorX) / oldScale;
+          const boardY = (viewer.scrollTop + anchorY) / oldScale;
+          viewer.scrollLeft = boardX * scale - anchorX;
+          viewer.scrollTop = boardY * scale - anchorY;
+        }
+        canvas.style.width = `${board.width * scale}px`;
+        canvas.style.height = `${board.height * scale}px`;
+        if (stage) stage.style.transform = `scale(${scale})`;
+        canvas.dataset.scale = String(scale);
+      }
+      function centerViewportOnContent() {
+        const bounds = contentBounds();
+        const scale = getZoomScale();
+        const centerX = (VIEW_PADDING + (bounds.maxX - bounds.minX) / 2) * scale;
+        const centerY = (VIEW_PADDING + (bounds.maxY - bounds.minY) / 2) * scale;
+        viewer.scrollLeft = Math.max(0, centerX - viewer.clientWidth / 2);
+        viewer.scrollTop = Math.max(0, centerY - viewer.clientHeight / 2);
+      }
+      function stepZoom(deltaPercent) {
+        setZoomPercent(Number(zoom.value || 100) + deltaPercent);
+      }
+      viewer.addEventListener("wheel", event => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        const current = getZoomScale();
+        const next = clamp(current * Math.exp(-event.deltaY * 0.0036), 0.1, 2);
+        setZoomPercent(Math.round(next * 100), event);
+      }, { passive: false });
+      zoom.addEventListener("input", () => applyZoom());
+      zoom.addEventListener("change", () => applyZoom());
+      document.getElementById("zoomOut").addEventListener("click", () => stepZoom(-5));
+      document.getElementById("zoomIn").addEventListener("click", () => stepZoom(5));
+      render();
+    </script>
+  </body>
+</html>
